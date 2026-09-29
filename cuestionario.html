@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Quiz Cunicultura - FMVZ BUAP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .shape-triangle {
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        .shape-diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+        .shape-circle {
+            border-radius: 50%;
+        }
+        .shape-square {
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-indigo-900 text-white min-h-screen flex flex-col justify-between select-none">
+
+    <!-- Header -->
+    <header class="p-4 bg-indigo-950 flex justify-between items-center border-b-4 border-indigo-800">
+        <div class="flex items-center space-x-2">
+            <span class="bg-purple-600 text-white font-black text-xl px-3 py-1 rounded-lg tracking-wider">SUPER CUNI-QUIZ</span>
+            <span class="text-xs sm:text-sm text-indigo-300 font-semibold hidden sm:inline">20 Preguntas | FMVZ - BUAP</span>
+        </div>
+        <div id="score-display" class="hidden bg-indigo-800 px-4 py-2 rounded-xl font-bold text-yellow-300 text-lg">
+            Puntos: <span id="score">0</span>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center max-w-xl w-full bg-indigo-800 p-8 rounded-3xl shadow-2xl border-4 border-indigo-700">
+            <h1 class="text-4xl sm:text-5xl font-black mb-4 text-yellow-400 tracking-tight">Cunicultura Master Challenge</h1>
+            <p class="text-indigo-200 text-lg mb-6">Examen interactivo ampliado con 20 preguntas basadas exhaustivamente en tu material de estudio.</p>
+            
+            <div class="bg-indigo-900/60 p-4 rounded-2xl mb-8 text-left text-sm text-indigo-200 space-y-2">
+                <p class="font-bold text-white">Novedades de esta versión:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>20 preguntas de opción múltiple.</li>
+                    <li>Abarca historia, taxonomía, parámetros productivos, razas, conducta y manejo.</li>
+                    <li>Explicaciones detalladas al terminar cada respuesta.</li>
+                </ul>
+            </div>
+
+            <button id="start-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-black text-2xl py-4 rounded-2xl shadow-lg transform transition active:scale-95 border-b-8 border-green-700">
+                ¡INICIAR SUPER QUIZ!
+            </button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden w-full max-w-4xl flex flex-col items-center">
+            
+            <!-- Progress Bar & Timer Header -->
+            <div class="w-full flex justify-between items-center mb-4">
+                <span id="question-number" class="text-lg font-black bg-indigo-800 px-4 py-2 rounded-xl text-indigo-200">
+                    Pregunta 1/20
+                </span>
+                <div class="relative w-16 h-16 flex items-center justify-center bg-indigo-950 rounded-full border-4 border-purple-500 shadow-inner">
+                    <span id="timer" class="text-2xl font-black text-yellow-400">20</span>
+                </div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="w-full bg-white text-gray-900 p-6 sm:p-8 rounded-3xl shadow-2xl mb-6 text-center border-b-8 border-gray-300">
+                <h2 id="question-text" class="text-xl sm:text-2xl md:text-3xl font-extrabold leading-snug">
+                    ¿Pregunta?
+                </h2>
+            </div>
+
+            <!-- Answer Buttons Grid -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="selectAnswer(0)" id="btn-0" class="ans-btn bg-red-600 hover:bg-red-700 text-white font-bold p-5 rounded-2xl shadow-lg flex items-center space-x-4 border-b-8 border-red-800 transition active:scale-95 text-left text-lg">
+                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-black flex-shrink-0">
+                        <div class="w-4 h-4 bg-white shape-triangle"></div>
+                    </span>
+                    <span id="text-0" class="flex-grow">Opción 1</span>
+                </button>
+
+                <button onclick="selectAnswer(1)" id="btn-1" class="ans-btn bg-blue-600 hover:bg-blue-700 text-white font-bold p-5 rounded-2xl shadow-lg flex items-center space-x-4 border-b-8 border-blue-800 transition active:scale-95 text-left text-lg">
+                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-black flex-shrink-0">
+                        <div class="w-4 h-4 bg-white shape-diamond"></div>
+                    </span>
+                    <span id="text-1" class="flex-grow">Opción 2</span>
+                </button>
+
+                <button onclick="selectAnswer(2)" id="btn-2" class="ans-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold p-5 rounded-2xl shadow-lg flex items-center space-x-4 border-b-8 border-yellow-700 transition active:scale-95 text-left text-lg">
+                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-black flex-shrink-0">
+                        <div class="w-4 h-4 bg-white shape-circle"></div>
+                    </span>
+                    <span id="text-2" class="flex-grow">Opción 3</span>
+                </button>
+
+                <button onclick="selectAnswer(3)" id="btn-3" class="ans-btn bg-green-600 hover:bg-green-700 text-white font-bold p-5 rounded-2xl shadow-lg flex items-center space-x-4 border-b-8 border-green-800 transition active:scale-95 text-left text-lg">
+                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center font-black flex-shrink-0">
+                        <div class="w-4 h-4 bg-white shape-square"></div>
+                    </span>
+                    <span id="text-3" class="flex-grow">Opción 4</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Feedback Modal/Overlay -->
+        <div id="feedback-screen" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+            <div id="feedback-card" class="max-w-md w-full bg-indigo-800 p-6 rounded-3xl text-center border-4 border-indigo-600 shadow-2xl">
+                <div id="feedback-status" class="text-3xl font-black mb-2">¡Correcto!</div>
+                <div id="feedback-points" class="text-yellow-400 font-bold text-xl mb-4">+1000 Puntos</div>
+                <div id="feedback-rationale" class="bg-indigo-900/80 p-4 rounded-xl text-indigo-200 text-sm mb-6 text-left border border-indigo-700">
+                    Explicación de la respuesta...
+                </div>
+                <button id="next-btn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black text-xl py-3 rounded-xl shadow-lg border-b-4 border-purple-900 transition active:scale-95">
+                    Siguiente Pregunta
+                </button>
+            </div>
+        </div>
+
+        <!-- Final Results Screen -->
+        <div id="results-screen" class="hidden text-center max-w-lg w-full bg-indigo-800 p-8 rounded-3xl shadow-2xl border-4 border-indigo-700">
+            <h1 class="text-3xl font-black mb-2 text-yellow-400">¡Reto Completado!</h1>
+            <p class="text-indigo-200 mb-6">Has finalizado las 20 preguntas del curso de Cunicultura.</p>
+            
+            <div class="bg-indigo-900 p-6 rounded-2xl mb-6">
+                <div class="text-indigo-300 text-sm font-bold uppercase tracking-wider mb-1">Puntuación Final</div>
+                <div id="final-score" class="text-5xl font-black text-yellow-300">0</div>
+                <div id="final-accuracy" class="text-indigo-200 text-sm mt-2">Aciertos: 0 / 20</div>
+            </div>
+
+            <button onclick="restartGame()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg border-b-8 border-green-700 transition active:scale-95">
+                VOLVER A INTENTAR
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="p-3 text-center text-xs text-indigo-400 bg-indigo-950">
+        Material de Estudio: Cunicultura - FMVZ BUAP
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                question: "¿A los cuántos días se realiza el destete de los gazapos según las notas de la clase?",
+                options: ["30 días", "45 días", "60 días", "90 días"],
+                correct: 1,
+                rationale: "Las notas indican explícitamente que 'los gazapos se destetan a los 45 días' (o entre 40 y 45 días en producción estándar)."
+            },
+            {
+                question: "¿Cuál es el nombre científico del teporingo o conejo de los volcanes, perteneciente a la familia Paleolaginae?",
+                options: ["Oryctolagus cuniculus", "Sylvilagus spp.", "Romerolagus diazi", "Cavia porcellus"],
+                correct: 2,
+                rationale: "Romerolagus diazi es el nombre científico del zacatuche o teporingo, de la familia Paleolaginae."
+            },
+            {
+                question: "¿Cuál es el rendimiento promedio en canal (%) en la producción de conejo?",
+                options: ["47%", "52%", "55%", "70%"],
+                correct: 2,
+                rationale: "En la tabla comparativa de especies, la coneja presenta un rendimiento en canal promedio del 55%."
+            },
+            {
+                question: "¿Qué porcentaje de fertilidad se contempla en los parámetros productivos cunícolas?",
+                options: ["70%", "80%", "90%", "98%"],
+                correct: 2,
+                rationale: "El cuadro de parámetros productivos señala una tasa de fertilidad del 90%."
+            },
+            {
+                question: "En el sistema de empadre a los 15 días postparto, ¿cuántos partos al año se obtienen por coneja?",
+                options: ["4 partos", "5 partos", "6 partos", "8 partos"],
+                correct: 2,
+                rationale: "Con el esquema de empadre a los 15 días postparto se proyectan 6 partos por hembra al año."
+            },
+            {
+                question: "¿Cuál es el porcentaje aceptable de mortalidad durante la etapa de engorde?",
+                options: ["2%", "5%", "10%", "15%"],
+                correct: 1,
+                rationale: "Los parámetros productivos fijan la mortalidad en un 10% durante la lactación y 5% en la etapa de engorde."
+            },
+            {
+                question: "¿Cuántos días dura el tiempo de engorde del conejo hasta su salida al mercado?",
+                options: ["45 días", "60 días", "90 días", "120 días"],
+                correct: 2,
+                rationale: "El periodo estándar de engorde para alcanzar el peso comercial es de 90 días."
+            },
+            {
+                question: "¿Cuál es el peso vivo promedio del conejo a la venta?",
+                options: ["1.600 kg", "2.000 kg", "2.700 kg", "4.000 kg"],
+                correct: 2,
+                rationale: "El peso vivo promedio a la venta es de 2.700 kg (obteniéndose aproximadamente 1.600 kg de carne en canal)."
+            },
+            {
+                question: "¿A qué edad alcanza el conejo la madurez sexual?",
+                options: ["2 a 4 meses", "6 a 8 meses", "10 a 12 meses", "14 a 16 meses"],
+                correct: 1,
+                rationale: "El documento indica que los conejos alcanzan la madurez sexual entre los 6 y 8 meses de edad."
+            },
+            {
+                question: "¿Cuál es la relación recomendada de hembras reproductoras por cada macho?",
+                options: ["1 macho por cada 2 hembras", "1 macho por cada 5 hembras", "1 macho por cada 15 hembras", "1 macho por cada 20 hembras"],
+                correct: 1,
+                rationale: "Los parámetros de producción establecen una proporción de 5 hembras por cada macho."
+            },
+            {
+                question: "¿En qué raza la papada está AUSENTE en los machos pero PRESENTE en las hembras?",
+                options: ["Gigante de Flandes", "Nueva Zelanda", "Castor Rex", "Chinchilla"],
+                correct: 1,
+                rationale: "La descripción morfológica de la raza Nueva Zelanda especifica: papada ausente en el macho y presente en la hembra."
+            },
+            {
+                question: "¿Cuál es el origen de la raza especial de piel Chinchilla?",
+                options: ["Estados Unidos", "Bélgica", "Francia", "España"],
+                correct: 2,
+                rationale: "La raza Chinchilla fue desarrollada en Francia mediante la selección de cruces entre conejo ruso, azul de Beveren y campesino."
+            },
+            {
+                question: "¿Qué caracteriza al pelaje de la mutación Castor Rex y variedades Rex?",
+                options: ["Pelo largo de más de 10 cm", "Pelaje sin subpelo corto", "Pelo denso y muy corto con tacto afelpado", "Muda constante cada mes"],
+                correct: 2,
+                rationale: "Las razas Rex destacan por su pelaje denso, parejo y extremadamente suave al tacto debido a la mutación de los pelos de cobertura."
+            },
+            {
+                question: "¿A qué edad se considera que un conejo entra en su etapa 'anciana' y puede presentar problemas de artrosis?",
+                options: ["2 años", "4 años", "6 años", "8 años"],
+                correct: 1,
+                rationale: "Las notas señalan que a partir de los 4 años el conejo se considera anciano y suele manifestar artrosis."
+            },
+            {
+                question: "¿Qué comportamiento es habitual entre dos machos adultos al ser alojados juntos?",
+                options: ["Convivencia pacífica", "Disputas constantes por jerarquía", "Comportamiento maternal", "Inactividad total"],
+                correct: 1,
+                rationale: "El documento detalla que la relación entre macho adulto y macho adulto genera disputas constantes (macho dominante vs macho sumiso)."
+            },
+            {
+                question: "¿Qué acción realizan los conejos para marcar su territorio?",
+                options: ["Rociar orina y frotar su barbilla", "Escarbar únicamente en el nido", "Emitir gruñidos agudos", "Dar saltos verticales"],
+                correct: 0,
+                rationale: "El marcaje territorial en conejos se realiza mediante frotado de glándulas mentonianas (barbilla) y rociado de orina."
+            },
+            {
+                question: "¿Qué cultura prehispánica intentó la domesticación del conejo Sylvilagus en Cacaxtla, Tlaxcala?",
+                options: ["Azteca", "Maya", "Olmeca", "Zapoteca"],
+                correct: 2,
+                rationale: "El documento atribuye los intentos de domesticación del conejo Sylvilagus en Tlaxcala a la cultura olmeca (considerada cultura madre)."
+            },
+            {
+                question: "¿Qué evento sanitario afectó fuertemente a la cunicultura en México durante la década de los 80?",
+                options: ["Gripe Aviar", "Enfermedad Hemorrágica Viral", "Fiebre Aftosa", "Mixomatosis masiva"],
+                correct: 1,
+                rationale: "En la línea del tiempo histórica de México se destaca la Enfermedad Hemorrágica Viral en la década de 1980."
+            },
+            {
+                question: "¿Cuál de los siguientes animales NO entra en la categoría de 'Microganado'?",
+                options: ["Conejo", "Cuyo / Cobayo", "Abeja", "Borrego"],
+                correct: 3,
+                rationale: "El borrego forma parte del ganado menor (junto a cabras y cerdos), mientras que el microganado incluye conejos, cuyos, capibaras y abejas."
+            },
+            {
+                question: "¿Cómo define el MVZ Miguel Ángel Martínez Castillo el término 'Manejo'?",
+                options: ["La venta de animales al mercado", "El cálculo exclusivo de las raciones alimenticias", "Sistema integral de alojamiento y asistencia para salud y desarrollo normal", "El proceso de sacrificio y canal"],
+                correct: 2,
+                rationale: "Se define Manejo como el sistema integral de alojamiento y asistencia que permite crecer, desarrollarse, reproducirse y mantenerse saludables."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timerSeconds = 20;
+        let timerInterval = null;
+        let correctAnswersCount = 0;
+
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const feedbackScreen = document.getElementById('feedback-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const scoreElem = document.getElementById('score');
+
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('next-btn').addEventListener('click', nextQuestion);
+
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            correctAnswersCount = 0;
+            scoreElem.innerText = score;
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            scoreDisplay.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearInterval(timerInterval);
+            timerSeconds = 20;
+            document.getElementById('timer').innerText = timerSeconds;
+            
+            const q = questions[currentQuestion];
+            document.getElementById('question-number').innerText = `Pregunta ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('question-text').innerText = q.question;
+
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`text-${i}`).innerText = q.options[i];
+                const btn = document.getElementById(`btn-${i}`);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                document.getElementById('timer').innerText = timerSeconds;
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timeOutAnswer();
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex) {
+            clearInterval(timerInterval);
+            const q = questions[currentQuestion];
+            const isCorrect = selectedIndex === q.correct;
+            
+            let pointsEarned = 0;
+            if (isCorrect) {
+                pointsEarned = 500 + (timerSeconds * 25);
+                score += pointsEarned;
+                correctAnswersCount++;
+                scoreElem.innerText = score;
+            }
+
+            showFeedback(isCorrect, pointsEarned, q.rationale);
+        }
+
+        function timeOutAnswer() {
+            const q = questions[currentQuestion];
+            showFeedback(false, 0, "¡Se acabó el tiempo! " + q.rationale);
+        }
+
+        function showFeedback(isCorrect, points, rationale) {
+            const statusElem = document.getElementById('feedback-status');
+            const pointsElem = document.getElementById('feedback-points');
+            const cardElem = document.getElementById('feedback-card');
+
+            if (isCorrect) {
+                statusElem.innerText = "¡CORRECTO!";
+                statusElem.className = "text-3xl font-black mb-2 text-green-400";
+                pointsElem.innerText = `+${points} PUNTOS`;
+                pointsElem.classList.remove('hidden');
+                cardElem.className = "max-w-md w-full bg-indigo-800 p-6 rounded-3xl text-center border-4 border-green-500 shadow-2xl";
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+            } else {
+                statusElem.innerText = "¡INCORRECTO!";
+                statusElem.className = "text-3xl font-black mb-2 text-red-400";
+                pointsElem.classList.add('hidden');
+                cardElem.className = "max-w-md w-full bg-indigo-800 p-6 rounded-3xl text-center border-4 border-red-500 shadow-2xl";
+            }
+
+            document.getElementById('feedback-rationale').innerText = rationale;
+            feedbackScreen.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            feedbackScreen.classList.add('hidden');
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        function showFinalResults() {
+            questionScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-accuracy').innerText = `Aciertos: ${correctAnswersCount} / ${questions.length}`;
+
+            if (correctAnswersCount >= 14) {
+                confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 } });
+            }
+        }
+
+        function restartGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
